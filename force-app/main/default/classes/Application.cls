@@ -1,11 +1,13 @@
 public class Application {
 
+    public static Map<String, SObjectType> SObjectTypesByNameMap = Schema.getGlobalDescribe();
+
     public SelectorClass Selector = new SelectorClass();
     public TriggerClass TriggerHandler = new TriggerClass();
 
     private class TriggerClass {
 
-        private Map<SObjectType, TriggerDefinitionData> triggerHandlerDefinitionMap = new Map<SObjectType, TriggerDefinitionData>();
+        private Map<SObjectType, TriggerHandlerDefinitionData> triggerHandlerDefinitionMap = new Map<SObjectType, TriggerHandlerDefinitionData>();
         private Map<SObjectType, ITriggerHandler> triggerHandlerInstanceMap = new Map<SObjectType, ITriggerHandler>();
         private Map<SObjectType, ITriggerHandler> mockTriggerHandlerMap = new Map<SObjectType, ITriggerHandler>();
 
@@ -28,7 +30,10 @@ public class Application {
             }
 
             if (triggerHandlerDefinitionMap.containsKey(sobj_type)) {
-                if (triggerHandlerDefinitionMap.get(sobj_type).disabled) {
+
+                // If the trigger handler is inactive via configuration
+                // return the do-nothing version.
+                if (!triggerHandlerDefinitionMap.get(sobj_type).active) {
                     triggerHandlerInstanceMap.put(sobj_type, new DoNothingTriggerClass());
                 }
                 else if (!triggerHandlerInstanceMap.containsKey(sobj_type)) {
@@ -49,10 +54,19 @@ public class Application {
 
         public TriggerClass() {
 
-            /********************************************************************************************
-             *   Place Trigger Handler definitions here as exemplified by the following comment.
-             *******************************************************************************************/
-            // triggerHandlerDefinitionMap.put(Account.SObjectType, Account_TH.class);
+            List<ApplicationTriggerHandlerBinding__mdt> definitionList = [
+                select
+                    Active__c,
+                    BindingSObject__c,
+                    BindingSObjectAlternate__c,
+                    To__c
+                from ApplicationTriggerHandlerBinding__mdt
+            ];
+
+            for (ApplicationTriggerHandlerBinding__mdt def : definitionList) {
+                TriggerHandlerDefinitionData def_data = new TriggerHandlerDefinitionData(def);
+                triggerHandlerDefinitionMap.put(def_data.sobj_type, def_data);
+            }
         }
     }
 
@@ -88,32 +102,73 @@ public class Application {
 
         public SelectorClass() {
 
-            /********************************************************************************************
-             *   Place Selector definitions here as exemplified by the following comment.
-             *******************************************************************************************/
-            // selectorDefinitionMap.put(Account.SObjectType, Account_SEL.class);
+            List<ApplicationSelectorBinding__mdt> definitionList = [
+                select
+                    BindingSObject__c,
+                    BindingSObjectAlternate__c,
+                    To__c
+                from ApplicationSelectorBinding__mdt
+            ];
+
+            for (ApplicationSelectorBinding__mdt def : definitionList) {
+                SelectorDefinitionData def_data = new SelectorDefinitionData(def);
+                selectorDefinitionMap.put(def_data.sobj_type, def_data);
+            }
         }
     }
 
     private class SelectorDefinitionData {
+
         public SObjectType sobj_type = null;
         public Type selector_class = null;
 
-        public SelectorDefinitionData(SObjectType sobj_type, Type selector_class) {
-            this.sobj_type = sobj_type;
-            this.selector_class = selector_class;
+        public SelectorDefinitionData(ApplicationSelectorBinding__mdt def) {
+
+            if (def.BindingSObject__c != null) {
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__c);
+            }
+            else if (Application.SObjectTypesByNameMap.containsKey(def.BindingSObjectAlternate__c)) {
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c);
+            }
+            else {
+                throw new ApplicationException('[Selector] Binding SObject not specified.');
+            }
+
+            if (String.isNotBlank(def.To__c)) {
+                selector_class = Type.forName(def.To__c);
+            }
+            else {
+                throw new ApplicationException('[Selector] Related Apex class not specified.');
+            }
         }
     }
 
-    private class TriggerDefinitionData {
+    private class TriggerHandlerDefinitionData {
+
         public SObjectType sobj_type = null;
         public Type trigger_class = null;
-        public Boolean disabled = false;
+        public Boolean active = true;
 
-        public TriggerDefinitionData(SObjectType sobj_type, Type trigger_class) {
-            this.sobj_type = sobj_type;
-            this.trigger_class = trigger_class;
-            this.disabled = false;
+        public TriggerHandlerDefinitionData(ApplicationTriggerHandlerBinding__mdt def) {
+
+            if (def.BindingSObject__c != null) {
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__c);
+            }
+            else if (Application.SObjectTypesByNameMap.containsKey(def.BindingSObjectAlternate__c)) {
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c);
+            }
+            else {
+                throw new ApplicationException('[TriggerHandler] Binding SObject not specified.');
+            }
+
+            if (String.isNotBlank(def.To__c)) {
+                trigger_class = Type.forName(def.To__c);
+            }
+            else {
+                throw new ApplicationException('[TriggerHandler] Related Apex class not specified.');
+            }
+
+            this.active = !def.Active__c;
         }
     }
 
