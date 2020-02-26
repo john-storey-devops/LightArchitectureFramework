@@ -2,10 +2,10 @@ public class Application {
 
     public static Map<String, SObjectType> SObjectTypesByNameMap = Schema.getGlobalDescribe();
 
-    public SelectorClass Selector = new SelectorClass();
-    public TriggerClass TriggerHandler = new TriggerClass();
+    public static SelectorClass Selector = new SelectorClass();
+    public static TriggerClass TriggerHandler = new TriggerClass();
 
-    private class TriggerClass {
+    public class TriggerClass {
 
         private Map<SObjectType, TriggerHandlerDefinitionData> triggerHandlerDefinitionMap = new Map<SObjectType, TriggerHandlerDefinitionData>();
         private Map<SObjectType, ITriggerHandler> triggerHandlerInstanceMap = new Map<SObjectType, ITriggerHandler>();
@@ -70,7 +70,7 @@ public class Application {
         }
     }
 
-    private class SelectorClass {
+    public class SelectorClass {
 
         private Map<SObjectType, SelectorDefinitionData> selectorDefinitionMap = new Map<SObjectType, SelectorDefinitionData>();
         private Map<SObjectType, ISObjectSelector> selectorInstanceMap = new Map<SObjectType, ISObjectSelector>();
