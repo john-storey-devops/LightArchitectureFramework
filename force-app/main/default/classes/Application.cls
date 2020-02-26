@@ -3,13 +3,13 @@ public class Application {
     public static Map<String, SObjectType> SObjectTypesByNameMap = Schema.getGlobalDescribe();
 
     public static SelectorClass Selector = new SelectorClass();
-    public static TriggerClass TriggerHandler = new TriggerClass();
+    public static DomainClass Domain = new DomainClass();
 
-    public class TriggerClass {
+    public class DomainClass {
 
-        private Map<SObjectType, TriggerHandlerDefinitionData> triggerHandlerDefinitionMap = new Map<SObjectType, TriggerHandlerDefinitionData>();
-        private Map<SObjectType, ITriggerHandler> triggerHandlerInstanceMap = new Map<SObjectType, ITriggerHandler>();
-        private Map<SObjectType, ITriggerHandler> mockTriggerHandlerMap = new Map<SObjectType, ITriggerHandler>();
+        private Map<SObjectType, DomainDefinitionData> domainDefinitionMap = new Map<SObjectType, DomainDefinitionData>();
+        private Map<SObjectType, IDomain> domainInstanceMap = new Map<SObjectType, IDomain>();
+        private Map<SObjectType, IDomain> mockDomainMap = new Map<SObjectType, IDomain>();
 
         /*
          *    This should be assigned True by a unit test exercising all of the triggers so that triggers have non-zero coverage.
@@ -17,55 +17,55 @@ public class Application {
         @TestVisible
         private Boolean triggerCoverageOnly = false;
 
-        public ITriggerHandler newTriggerHandler(SObjectType sobj_type) {
+        public IDomain newInstance(SObjectType sobj_type) {
 
             // Exit the process if the usage is for trigger class coverage.
             if (triggerCoverageOnly) {
-                return new DoNothingTriggerClass();
+                return new DoNothingDomainClass();
             }
 
             // If a mock instance exists, provide it to the consumer.
-            if (mockTriggerHandlerMap.containsKey(sobj_type)) {
-                return mockTriggerHandlerMap.get(sobj_type);
+            if (mockDomainMap.containsKey(sobj_type)) {
+                return mockDomainMap.get(sobj_type);
             }
 
-            if (triggerHandlerDefinitionMap.containsKey(sobj_type)) {
+            if (domainDefinitionMap.containsKey(sobj_type)) {
 
-                // If the trigger handler is inactive via configuration
+                // If the domain is inactive via configuration
                 // return the do-nothing version.
-                if (!triggerHandlerDefinitionMap.get(sobj_type).active) {
-                    triggerHandlerInstanceMap.put(sobj_type, new DoNothingTriggerClass());
+                if (!domainDefinitionMap.get(sobj_type).active) {
+                    domainInstanceMap.put(sobj_type, new DoNothingDomainClass());
                 }
-                else if (!triggerHandlerInstanceMap.containsKey(sobj_type)) {
-                    triggerHandlerInstanceMap.put(sobj_type, ((ITriggerHandler) triggerHandlerDefinitionMap.get(sobj_type).trigger_class.newInstance()).newTriggerInstance());
+                else if (!domainInstanceMap.containsKey(sobj_type)) {
+                    Type domainClass = domainDefinitionMap.get(sobj_type).domain_class;
+                    domainInstanceMap.put(sobj_type, (IDomain) domainClass.newInstance());
                 }
             }
             else {
-                throw new ApplicationException('[TriggerHandler] SObjectType doesn\'t have a defined, trigger-handler implementation.');
+                throw new ApplicationException('[Domain] SObjectType doesn\'t have a defined, trigger-handler implementation.');
             }
 
-            return triggerHandlerInstanceMap.get(sobj_type);
+            return domainInstanceMap.get(sobj_type);
         }
 
-        public void setMock(SObjectType sobj_type, ITriggerHandler mock_handler) {
-
-            mockTriggerHandlerMap.put(sobj_type, mock_handler);
+        public void setMock(SObjectType sobj_type, IDomain mock_domain) {
+            mockDomainMap.put(sobj_type, mock_domain);
         }
 
-        public TriggerClass() {
+        public DomainClass() {
 
-            List<ApplicationTriggerHandlerBinding__mdt> definitionList = [
+            List<ApplicationDomainBinding__mdt> definitionList = [
                 select
                     Active__c,
                     BindingSObject__c,
                     BindingSObjectAlternate__c,
                     To__c
-                from ApplicationTriggerHandlerBinding__mdt
+                from ApplicationDomainBinding__mdt
             ];
 
-            for (ApplicationTriggerHandlerBinding__mdt def : definitionList) {
-                TriggerHandlerDefinitionData def_data = new TriggerHandlerDefinitionData(def);
-                triggerHandlerDefinitionMap.put(def_data.sobj_type, def_data);
+            for (ApplicationDomainBinding__mdt def : definitionList) {
+                DomainDefinitionData def_data = new DomainDefinitionData(def);
+                domainDefinitionMap.put(def_data.sobj_type, def_data);
             }
         }
     }
@@ -143,13 +143,13 @@ public class Application {
         }
     }
 
-    private class TriggerHandlerDefinitionData {
+    private class DomainDefinitionData {
 
         public SObjectType sobj_type = null;
-        public Type trigger_class = null;
+        public Type domain_class = null;
         public Boolean active = true;
 
-        public TriggerHandlerDefinitionData(ApplicationTriggerHandlerBinding__mdt def) {
+        public DomainDefinitionData(ApplicationDomainBinding__mdt def) {
 
             if (def.BindingSObject__c != null) {
                 sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__c);
@@ -158,17 +158,17 @@ public class Application {
                 sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c);
             }
             else {
-                throw new ApplicationException('[TriggerHandler] Binding SObject not specified.');
+                throw new ApplicationException('[Domain] Binding SObject not specified.');
             }
 
             if (String.isNotBlank(def.To__c)) {
-                trigger_class = Type.forName(def.To__c);
+                domain_class = Type.forName(def.To__c);
             }
             else {
-                throw new ApplicationException('[TriggerHandler] Related Apex class not specified.');
+                throw new ApplicationException('[Domain] Related Apex class not specified.');
             }
 
-            this.active = !def.Active__c;
+            this.active = def.Active__c;
         }
     }
 

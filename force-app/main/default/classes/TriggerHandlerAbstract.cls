@@ -1,6 +1,6 @@
-public virtual class TriggerHandlerAbstract
-    implements ITriggerHandler {
+public abstract class TriggerHandlerAbstract  {
 
+    protected Boolean isExecuting = false;
     protected Boolean isBefore = false;
     protected Boolean isAfter = false;
     protected Boolean isInsert = false;
@@ -11,6 +11,7 @@ public virtual class TriggerHandlerAbstract
     protected Map<Id, SObject> oldSObjectMap = null;
 
     protected void setTriggerContext() {
+        isExecuting = Trigger.isExecuting;
         isBefore = Trigger.isBefore;
         isAfter = Trigger.isAfter;
         isInsert = Trigger.isInsert;
@@ -21,37 +22,7 @@ public virtual class TriggerHandlerAbstract
         oldSObjectMap = Trigger.oldMap;
     }
 
-    public virtual void handleTrigger() {
-        throw new TriggerHandlerAbstractException('Must be implemented by the extending class.');
-    }
-
-    public virtual ITriggerHandler newTriggerInstance() {
-        throw new TriggerHandlerAbstractException('Must be implemented by the extending class.');
-    }
-
-    @TestVisible
-    private void setTriggerContext(MockTriggerContext mock_trigger_context) {
-        isBefore = mock_trigger_context.isBefore;
-        isAfter = mock_trigger_context.isAfter;
-        isInsert = mock_trigger_context.isInsert;
-        isUpdate = mock_trigger_context.isUpdate;
-        isDelete = mock_trigger_context.isDelete;
-
-        newSObjectList = mock_trigger_context.newSObjectList;
-        oldSObjectMap = mock_trigger_context.oldSObjectMap;
-    }
-
-    @TestVisible
-    private class MockTriggerContext {
-        public Boolean isBefore = false;
-        public Boolean isAfter = false;
-        public Boolean isInsert = false;
-        public Boolean isUpdate = false;
-        public Boolean isDelete = false;
-
-        public List<Account> newSObjectList = null;
-        public Map<Id, Account> oldSObjectMap = null;
-    }
+    public abstract void handleTrigger();
 
     public class TriggerHandlerAbstractException
         extends Exception {}

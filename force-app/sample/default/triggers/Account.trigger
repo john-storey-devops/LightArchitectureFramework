@@ -6,5 +6,5 @@ Trigger Account
     After Insert,
     After Update
 ) {
-    Application.TriggerHandler.newTriggerHandler(Account.SObjectType).handleTrigger();
+    ((ITriggerHandler) Application.Domain.newInstance(Account.SObjectType)).handleTrigger();
 }

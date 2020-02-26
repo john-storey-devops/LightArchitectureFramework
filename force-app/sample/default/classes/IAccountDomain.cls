@@ -1,3 +1,3 @@
 public interface IAccountDomain {
-    void validate();
+    void validate(List<Account> accountList);
 }

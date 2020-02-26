@@ -1,6 +1,14 @@
 public class AccountDomain
     extends TriggerHandlerAbstract
-    implements IAccountDomain {
+    implements IAccountDomain, ITriggerHandler, IDomain {
+
+    public static IAccountDomain newInstance() {
+        return (IAccountDomain) Application.Domain.newInstance(Account.SObjectType);
+    }
+
+    public static SObjectType domainSObjectType() {
+        return Account.SObjectType;
+    }
 
     private List<Account> getNewAccountList() {
         return (List<Account>) newSObjectList;
@@ -12,19 +20,11 @@ public class AccountDomain
 
     public override void handleTrigger() {
 
+        setTriggerContext();
+
         if (isBefore && isInsert || isBefore && isUpdate) {
             validate(getNewAccountList());
         }
-    }
-
-    public static ITriggerHandler newTriggerInstance() {
-        AccountDomain dom = new AccountDomain();
-        dom.setTriggerContext();
-        return dom;
-    }
-
-    public void validate() {
-        validate(getNewAccountList());
     }
 
     public void validate(List<Account> accountList) {
@@ -37,7 +37,7 @@ public class AccountDomain
     }
 
     public class AccountDomainException
-        extends exception {
+        extends Exception {
         // Intentionally blank.
     }
 }

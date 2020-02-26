@@ -3,7 +3,7 @@ public class TriggersExerciseTest {
     
     @IsTest
     private static void Account() {
-        Application.TriggerHandler.triggerCoverageOnly = true;
+        Application.Domain.triggerCoverageOnly = true;
         insert new Account(Name='joe');
     }
 }
