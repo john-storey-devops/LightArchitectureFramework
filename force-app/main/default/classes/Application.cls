@@ -49,6 +49,9 @@ public class Application {
 
         public TriggerClass() {
 
+            /********************************************************************************************
+             *   Place Trigger Handler definitions here as exemplified by the following comment.
+             *******************************************************************************************/
             // triggerHandlerDefinitionMap.put(Account.SObjectType, Account_TH.class);
         }
     }
@@ -85,6 +88,9 @@ public class Application {
 
         public SelectorClass() {
 
+            /********************************************************************************************
+             *   Place Selector definitions here as exemplified by the following comment.
+             *******************************************************************************************/
             // selectorDefinitionMap.put(Account.SObjectType, Account_SEL.class);
         }
     }
