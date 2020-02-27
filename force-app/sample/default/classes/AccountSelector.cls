@@ -20,8 +20,19 @@ public inherited sharing class AccountSelector
         }
     
         public List<Account> selectByNameContains(String search_text) {
+
+            /*
+             *    Using text input, like this argument, without proper precautions
+             *    is highly discouraged, but for the purposes of illustration this
+             *    code does not perform any security screening.
+             */
     
             if (String.isNotBlank(search_text)) return new List<Account>();
+
+            /*
+             *    More robust frameworks have programmatic means for generating
+             *    SOQL statements that consider various access settings.
+             */
     
             String soql =
                 'select '
