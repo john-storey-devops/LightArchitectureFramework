@@ -1,3 +1,4 @@
-public interface IAccountDomain {
+public interface IAccountDomain
+    extends IDomain {
     void validate(List<Account> accountList);
 }

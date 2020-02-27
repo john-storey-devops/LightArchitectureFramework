@@ -2,7 +2,7 @@ public inherited sharing class AccountSelector
     implements IAccountSelector {
 
         public static IAccountSelector newInstance() {
-            return (IAccountSelector) Application.selector.newSelector(Account.SObjectType);
+            return (IAccountSelector) Application.selector.newInstance(Account.SObjectType);
         }
     
         public Schema.sObjectType sObjectType() {

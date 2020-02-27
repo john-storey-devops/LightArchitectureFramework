@@ -76,7 +76,7 @@ public class Application {
         private Map<SObjectType, ISObjectSelector> selectorInstanceMap = new Map<SObjectType, ISObjectSelector>();
         private Map<SObjectType, ISObjectSelector> mockSelectorMap = new Map<SObjectType, ISObjectSelector>();
 
-        public ISObjectSelector newSelector(SObjectType sobj_type) {
+        public ISObjectSelector newInstance(SObjectType sobj_type) {
 
             // If a mock instance exists, provide it to the consumer.
             if (mockSelectorMap.containsKey(sobj_type)) {

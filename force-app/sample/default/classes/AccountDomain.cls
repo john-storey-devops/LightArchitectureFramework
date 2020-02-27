@@ -1,6 +1,6 @@
 public class AccountDomain
     extends TriggerHandlerAbstract
-    implements IAccountDomain, ITriggerHandler, IDomain {
+    implements IAccountDomain, ITriggerHandler {
 
     public static IAccountDomain newInstance() {
         return (IAccountDomain) Application.Domain.newInstance(Account.SObjectType);
