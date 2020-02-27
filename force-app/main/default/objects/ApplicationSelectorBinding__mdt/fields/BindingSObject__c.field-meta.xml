@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>BindingSObject__c</fullName>
+    <description>Specifies the the SObject Type for this relationship.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>Specifies the the SObject Type for this relationship.</inlineHelpText>
+    <label>Binding SObject</label>
+    <referenceTo>EntityDefinition</referenceTo>
+    <relationshipLabel>ApplicationSelectorBindings</relationshipLabel>
+    <relationshipName>ApplicationSelectorBindings</relationshipName>
+    <required>false</required>
+    <type>MetadataRelationship</type>
+    <unique>false</unique>
+</CustomField>
