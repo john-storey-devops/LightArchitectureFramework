@@ -42,6 +42,10 @@ public class AccountDomainTest {
             return Account.SObjectType;
         }
 
+        public String getFieldsToQuery() {
+            return '';
+        }
+
         public List<SObject> selectSObjectById(Set<Id> idSet) {
             return list_to_return;
         }

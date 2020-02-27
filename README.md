@@ -10,6 +10,11 @@ The [FFLIB Mocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks) 
 Review the many attributions linked in those repos for deeper insight to that listed in this document.
 
 
+## Deployment
+
+Only the resources in the `force-app/main/default` folder are required.  As named, the `.../sample` folder is for edification or insight only.
+
+
 ## Selector Pattern
 
 The general purpose for the selector pattern is to encapsulate SOQL functionality in a central, reusable location.
@@ -45,3 +50,8 @@ The general purpose for the Domain pattern is to centralize logic that is not su
 1. Add the new method to the domain's interface.
 2. Add the new method to the domain.
 3. Add quality unit testing.
+
+
+## Further Question, Comments or Information
+
+PLEASE! ... feel free to contact any of the Technical Architects or Lead Developers to report problems or seek further information.

@@ -90,6 +90,10 @@ public class AccountSpecialTest {
             return Account.SObjectType;
         }
 
+        public String getFieldsToQuery() {
+            return '';
+        }
+    
         public List<SObject> selectSObjectById(Set<Id> idSet) {
             return accountList;
         }

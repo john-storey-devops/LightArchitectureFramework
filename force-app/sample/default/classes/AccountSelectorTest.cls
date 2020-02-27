@@ -9,16 +9,16 @@ public class AccountSelectorTest {
     }
 
     @IsTest
-    private static void SelectSObjectById_IdSetIsEmpty() {
-        Id mock_id = Account.SObjectType.getDescribe().getKeyPrefix() + '000000000001';
-        List<SObject> sobjectList = AccountSelector.newInstance().selectSObjectById(new Set<Id>{mock_id});
-        System.assert(sobjectList != null);
-        System.assert(sobjectList.isEmpty());
+    private static void SelectById_IdSetIsEmpty() {
+        List<Account> accountList = AccountSelector.newInstance().selectById(new Set<Id>());
+        System.assert(accountList != null);
+        System.assert(accountList.isEmpty());
     }
 
     @IsTest
-    private static void SelectById_IdSetIsEmpty() {
-        List<Account> accountList = AccountSelector.newInstance().selectById(new Set<Id>());
+    private static void SelectById_AbsentRecord() {
+        Id mock_id = Account.SObjectType.getDescribe().getKeyPrefix() + '000000000001';
+        List<Account> accountList = AccountSelector.newInstance().selectById(new Set<Id>{mock_id});
         System.assert(accountList != null);
         System.assert(accountList.isEmpty());
     }
