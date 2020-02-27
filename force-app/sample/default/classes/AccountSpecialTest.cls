@@ -98,7 +98,7 @@ public class AccountSpecialTest {
             return accountList;
         }
 
-        public List<Account> selectNameContains(String search_text) {
+        public List<Account> selectByNameContains(String search_text) {
             return accountList;
         }
     }

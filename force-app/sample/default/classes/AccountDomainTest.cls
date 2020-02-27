@@ -2,6 +2,14 @@
 public class AccountDomainTest {
 
     @IsTest
+    private static void createNewInstance() {
+
+        IAccountDomain dom = AccountDomain.newInstance();
+        System.assert(dom != null);
+        System.assertEquals(Account.SObjectType, dom.domainSObjectType());
+    }
+
+    @IsTest
     private static void Validation_PositiveCase() {
 
         Account acct = new Account();
@@ -42,7 +50,7 @@ public class AccountDomainTest {
             return list_to_return;
         }
 
-        public List<Account> selectNameContains(String search_text) {
+        public List<Account> selectByNameContains(String search_text) {
             return list_to_return;
         }
 

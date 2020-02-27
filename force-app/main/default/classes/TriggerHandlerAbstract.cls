@@ -1,4 +1,5 @@
-public abstract class TriggerHandlerAbstract  {
+public abstract class TriggerHandlerAbstract
+    implements ITriggerHandler {
 
     protected Boolean isExecuting = false;
     protected Boolean isBefore = false;
@@ -8,7 +9,11 @@ public abstract class TriggerHandlerAbstract  {
     protected Boolean isDelete = false;
 
     protected List<SObject> newSObjectList = null;
+    protected Map<Id, SObject> newSObjectMap = null;
+    protected List<SObject> oldSObjectList = null;
     protected Map<Id, SObject> oldSObjectMap = null;
+
+    protected Integer size = -1;
 
     protected void setTriggerContext() {
         isExecuting = Trigger.isExecuting;
@@ -19,7 +24,11 @@ public abstract class TriggerHandlerAbstract  {
         isDelete = Trigger.isDelete;
 
         newSObjectList = Trigger.new;
+        newSObjectMap = Trigger.newMap;
+        oldSObjectList = Trigger.old;
         oldSObjectMap = Trigger.oldMap;
+
+        size = Trigger.size;
     }
 
     public abstract void handleTrigger();

@@ -40,9 +40,11 @@ public inherited sharing class AccountSelector
     
             String soql =
                 'select '
-                + getFieldsToQuery()
+                + getFieldsToQuery() + ' ' +
                 + 'from ' + sObjectType() + ' '
                 + 'where id in :idSet';
+
+            System.debug('js:\n' + soql);
     
             return (List<Account>) Database.query(soql);
         }
@@ -51,13 +53,13 @@ public inherited sharing class AccountSelector
             return (List<Account>) selectSObjectById(idset);
         }
     
-        public List<Account> selectNameContains(String search_text) {
+        public List<Account> selectByNameContains(String search_text) {
     
             if (String.isNotBlank(search_text)) return new List<Account>();
     
             String soql =
                 'select '
-                + getFieldsToQuery()
+                + getFieldsToQuery() + ' ' +
                 + 'from ' + sObjectType() + ' '
                 + 'where Name like \':search_text%\'';
     
