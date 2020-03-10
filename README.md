@@ -1,6 +1,6 @@
 # Interim Architecture Framework
 
-In lieu of the adoption of more extensive and commonly prescribed architectural frameworks, this interim framework provides some basic functionality that facilitates more precise and limited unit testing, while minimizing the technical debt when adoption of successive frameworks are adopted.
+In lieu of the adoption of more extensive and commonly prescribed architectural frameworks, this interim framework provides some basic functionality that facilitates more precise and limited unit testing, while minimizing the technical debt when successive frameworks are adopted.
 
 
 ## Basic Design Principle

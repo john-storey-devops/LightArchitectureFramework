@@ -48,7 +48,8 @@ public class Application {
             return domainInstanceMap.get(sobj_type);
         }
 
-        public void setMock(SObjectType sobj_type, IDomain mock_domain) {
+        @TestVisible
+        private void setMock(SObjectType sobj_type, IDomain mock_domain) {
             mockDomainMap.put(sobj_type, mock_domain);
         }
 
@@ -95,7 +96,8 @@ public class Application {
             return selectorInstanceMap.get(sobj_type);
         }
 
-        public void setMock(SObjectType sobj_type, ISObjectSelector mock_selector) {
+        @TestVisible
+        private void setMock(SObjectType sobj_type, ISObjectSelector mock_selector) {
 
             mockSelectorMap.put(sobj_type, mock_selector);
         }
