@@ -4,7 +4,6 @@ on:
             - master
             - 'feature/**'
             - 'demo/**'
-            - 'add_ci'
 
 jobs:
     run_unit_tests:
