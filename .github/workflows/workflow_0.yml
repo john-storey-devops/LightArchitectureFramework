@@ -1,9 +1,9 @@
 on:
-    push:
-        branches:
-            - master
-            - 'feature/**'
-            - 'demo/**'
+    push
+        #branches:
+        #    - master
+        #    - 'feature/**'
+        #    - 'demo/**'
 
 jobs:
     run_unit_tests:
