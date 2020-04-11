@@ -1,10 +1,10 @@
 on:
-    push
-        #branches:
-        #    - master
-        #    - 'feature/**'
-        #    - 'demo/**'
-        # Insignificant -- 2110
+    push:
+        branches:
+            - master
+            - 'feature/**'
+            - 'demo/**'
+            - 'add_ci'
 
 jobs:
     run_unit_tests:
