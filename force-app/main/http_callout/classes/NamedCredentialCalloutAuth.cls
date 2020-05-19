@@ -26,13 +26,19 @@ public virtual class NamedCredentialCalloutAuth
 
             String workingUrl = 'callout:' + getIdentifier();
 
-            workingUrl += path.startsWith('/') ? '' : '/';
-            workingUrl += path;
+            if (String.isNotBlank(path))
+            {
+                workingUrl += path.startsWith('/') ? '' : '/';
+                workingUrl += path;
+            }
 
-            workingUrl += query.startsWith('?') ? '' : '?';
-            workingUrl += query;
+            if (String.isNotBlank(query))
+            {
+                workingUrl += query.startsWith('?') ? '' : '?';
+                workingUrl += query;
+            }
 
-            system.debug( workingUrl );
+            System.debug(System.LoggingLevel.INFO, workingUrl );
 
             request.setEndpoint( workingUrl );
         }
