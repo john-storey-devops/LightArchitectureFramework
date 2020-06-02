@@ -129,7 +129,7 @@ public class Application {
         public SelectorDefinitionData(ApplicationSelectorBinding__mdt def) {
 
             if (def.BindingSObject__c != null) {
-                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__c);
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__r.QualifiedApiName);
             }
             else if (Application.SObjectTypesByNameMap.containsKey(def.BindingSObjectAlternate__c.toLowerCase())) {
                 sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c.toLowerCase());
@@ -156,7 +156,7 @@ public class Application {
         public DomainDefinitionData(ApplicationDomainBinding__mdt def) {
 
             if (def.BindingSObject__c != null) {
-                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__c);
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__r.QualifiedApiName);
             }
             else if (Application.SObjectTypesByNameMap.containsKey(def.BindingSObjectAlternate__c.toLowerCase())) {
                 sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c.toLowerCase());
