@@ -59,6 +59,7 @@ public class Application {
                 select
                     Active__c,
                     BindingSObject__c,
+                    BindingSObject__r.QualifiedApiName,
                     BindingSObjectAlternate__c,
                     To__c
                 from ApplicationDomainBinding__mdt
@@ -107,6 +108,7 @@ public class Application {
             List<ApplicationSelectorBinding__mdt> definitionList = [
                 select
                     BindingSObject__c,
+                    BindingSObject__r.QualifiedApiName,
                     BindingSObjectAlternate__c,
                     To__c
                 from ApplicationSelectorBinding__mdt
@@ -127,10 +129,10 @@ public class Application {
         public SelectorDefinitionData(ApplicationSelectorBinding__mdt def) {
 
             if (def.BindingSObject__c != null) {
-                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__c);
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__r.QualifiedApiName);
             }
-            else if (Application.SObjectTypesByNameMap.containsKey(def.BindingSObjectAlternate__c)) {
-                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c);
+            else if (Application.SObjectTypesByNameMap.containsKey(def.BindingSObjectAlternate__c.toLowerCase())) {
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c.toLowerCase());
             }
             else {
                 throw new ApplicationException('[Selector] Binding SObject not specified.');
@@ -154,10 +156,10 @@ public class Application {
         public DomainDefinitionData(ApplicationDomainBinding__mdt def) {
 
             if (def.BindingSObject__c != null) {
-                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__c);
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__r.QualifiedApiName);
             }
-            else if (Application.SObjectTypesByNameMap.containsKey(def.BindingSObjectAlternate__c)) {
-                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c);
+            else if (Application.SObjectTypesByNameMap.containsKey(def.BindingSObjectAlternate__c.toLowerCase())) {
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c.toLowerCase());
             }
             else {
                 throw new ApplicationException('[Domain] Binding SObject not specified.');
