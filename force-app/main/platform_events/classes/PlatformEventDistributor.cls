@@ -37,6 +37,9 @@ public class PlatformEventDistributor
     private static string CATEGORY_FIELD_NAME = 'Category__c'.toLowerCase();
     private static string EVENT_NAME_FIELD_NAME = 'EventName__c'.toLowerCase();
 
+    private static Schema.DescribeSObjectResult Platform_Event_Bus_Describe = null;
+    private static Set<String> Platform_Event_Bus_Available_Fields_Set = null;
+
     private Map<String, List<PlatformEvents_Subscription__mdt>> eventBusToConfigurationMap = new Map<String, List<PlatformEvents_Subscription__mdt>>();
 
     @TestVisible
@@ -69,7 +72,7 @@ public class PlatformEventDistributor
 
             eventBusToConfigurationMap.get(peSubscriber.EventBus__c).add(peSubscriber);
 
-            System.debug(eventBusToConfigurationMap);
+            System.debug(LoggingLevel.DEBUG, eventBusToConfigurationMap);
         }
     }
 
@@ -84,49 +87,17 @@ public class PlatformEventDistributor
     @TestVisible
     private void triggerHandler(List<SObject> events)
     {
-        System.debug('events:\n' + events);
+        System.debug(LoggingLevel.DEBUG, 'events:\n' + events);
 
-        if (events == null || events.isEmpty()) return;
-
-        // extract the event payloads
-        Set<String> eventNameSet = generateStringSetFromField(events, Event__e.EventName__c, false);
-        Set<String> eventCategorySet = generateStringSetFromField(events, Event__e.Category__c, false);
-
-        Schema.DescribeSObjectResult platformEventBusDescribe = events.getSobjectType().getDescribe();
-
-        // need to read all available PlatformEvents_Subscription__mdt records for this event SObjectType
-        // SOQL targeting custom MDT tables does not support the OR operator.  Manually filter.
-        // https://help.salesforce.com/articleView?id=custommetadatatypes_limitations.htm
-        List<PlatformEvents_Subscription__mdt> eventSubscriptionRecords = new List<PlatformEvents_Subscription__mdt>();
-        for
-        (
-            PlatformEvents_Subscription__mdt ped :
-            [
-                select
-                    Consumer__c, EventCategory__c, Event__c, IsActive__c, MatcherRule__c, EventBus__c, ExecuteSynchronous__c
-                from PlatformEvents_Subscription__mdt
-                where IsActive__c = true AND EventBus__c = :platformEventBusDescribe.getName()
-            ]
-        )
+        if (events == null || events.isEmpty())
         {
-            if (eventNameSet.contains(ped.Event__c) || eventCategorySet.contains(ped.EventCategory__c) || String.isBlank(ped.EventCategory__c))
-            {
-                eventSubscriptionRecords.add(ped);
-            }
+            return;
         }
 
-        System.debug(
-            '\neventNameSet:\n\t' + eventNameSet + '\n' +
-            'eventCategorySet:\n\t' + eventCategorySet + '\n' +
-            'CMDT records:\n\t' + [select Consumer__c, EventCategory__c, Event__c, IsActive__c, MatcherRule__c, EventBus__c from PlatformEvents_Subscription__mdt] + '\n' +
-            'Event bus name: ' + platformEventBusDescribe.getName() + '\n' +
-            'eventSubscriptionRecords:\n\t' + eventSubscriptionRecords);
+        captureEventSchemaInformation(events);
 
-        IEventsConsumer consumer = null;
-
+        List<PlatformEvents_Subscription__mdt> eventSubscriptionRecords = getEventSubscribers(events);
         List<SObject> eventBatchForSubscriber = new List<SObject>();
-
-        Set<String> platformEventBusAvailableFieldsSet = platformEventBusDescribe.fields.getMap().keyset();
 
         // for each PlatformEvents_Subscription__mdt record, instantiate the Apex class found in the Consumer field
         for ( PlatformEvents_Subscription__mdt subscriptionRecord : eventSubscriptionRecords )
@@ -136,93 +107,120 @@ public class PlatformEventDistributor
             // sort through the events and only select the ones that this subscriber is interested.
             for ( SObject event : events )
             {
-                System.debug(
-                    'Comparing ...\n' +
-                    'platformEventBusAvailableFieldsSet:\n\t' + new List<String>(platformEventBusAvailableFieldsSet) + '\n' +
-                    'platformEventBusDescribe.getName(): ' + platformEventBusDescribe.getName() + '\n' +
-                    'subscriptionRecord:\n\t' + subscriptionRecord + '\n' +
-                    'event:\n\t' + event);
-
-                // Match on Category__c and EventName__c
-                if ( platformEventBusDescribe.getName().equalsIgnoreCase( subscriptionRecord.EventBus__c )
-                    && MatcherRules.MatchEventBusAndCategoryAndEventName.name().equalsIgnoreCase( subscriptionRecord.MatcherRule__c )
-                    && platformEventBusAvailableFieldsSet.contains( CATEGORY_FIELD_NAME )
-                    && platformEventBusAvailableFieldsSet.contains( EVENT_NAME_FIELD_NAME )
-                    && subscriptionRecord.EventCategory__c.equalsIgnoreCase( (String)event.get( CATEGORY_FIELD_NAME ) )
-                    && subscriptionRecord.Event__c.equalsIgnoreCase( (String)event.get( EVENT_NAME_FIELD_NAME ) ) )
+                if (eventMatchesSubscriberCriteria(event, subscriptionRecord))
                 {
-                    System.debug('<ojs> match #1');
                     eventBatchForSubscriber.add( event );
-                }
-
-                // Match on Category__c
-                else if ( platformEventBusDescribe.getName().equalsIgnoreCase( subscriptionRecord.EventBus__c )
-                    && MatcherRules.MatchEventBusAndCategory.name().equalsIgnoreCase( subscriptionRecord.MatcherRule__c )
-                    && platformEventBusAvailableFieldsSet.contains( CATEGORY_FIELD_NAME )
-                    && subscriptionRecord.EventCategory__c.equalsIgnoreCase( (String)event.get( CATEGORY_FIELD_NAME ) ) )
-                {
-                    System.debug('<ojs> match #2');
-                    eventBatchForSubscriber.add( event );
-                }
-
-                // Match on EventName__c
-                else if ( platformEventBusDescribe.getName().equalsIgnoreCase( subscriptionRecord.EventBus__c )
-                    && MatcherRules.MatchEventBusandEventName.name().equalsIgnoreCase( subscriptionRecord.MatcherRule__c )
-                    && platformEventBusAvailableFieldsSet.contains( EVENT_NAME_FIELD_NAME )
-                    && subscriptionRecord.Event__c.equalsIgnoreCase( (String)event.get( EVENT_NAME_FIELD_NAME ) ) )
-                {
-                    System.debug('<ojs> match #3');
-                    eventBatchForSubscriber.add( event );
-                }
-
-                // Match sole because it is an event on this specific platform event bus
-                else if ( platformEventBusDescribe.getName().equalsIgnoreCase( subscriptionRecord.EventBus__c )
-                    && MatcherRules.MatchEventBus.name().equalsIgnoreCase( subscriptionRecord.MatcherRule__c ) )
-                {
-                    System.debug('<ojs> match #4');
-                    eventBatchForSubscriber.add( event );
-                }
-
-                else
-                {
-                    System.debug('<ojs> no match');
                 }
             }
 
-            System.debug('<ojs> eventBatchForSubscriber:\n' + eventBatchForSubscriber);
+            System.debug(LoggingLevel.DEBUG, 'eventBatchForSubscriber:\n' + eventBatchForSubscriber);
 
-            if ( ! eventBatchForSubscriber.isEmpty() )
-            {
-                // now that the events have been sorted for this specific subscription, distribute them to that subscriber
-                try
-                {
-                    System.debug('<ojs> attempting to construct the consumer');
-                    System.debug('<ojs> subscriptionRecord.Consumer__c:\n' + subscriptionRecord.Consumer__c);
-
-                    // verify that the class exists and that class implements the IEventsConsumer interface
-                    consumer = (IEventsConsumer)(Type.forName( subscriptionRecord.Consumer__c ).newInstance());
-
-                    System.debug('<ojs> successfully constructed');
-
-                    Id thisJob = subscriptionRecord.ExecuteSynchronous__c != null && subscriptionRecord.ExecuteSynchronous__c
-                        ? consumer.setEvents(eventBatchForSubscriber).setRunSynchronous().run()
-                        : consumer.setEvents(eventBatchForSubscriber).run();
-                    
-                    if (thisJob != null) {
-                        jobIdList.add( thisJob );
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    system.debug( e );
-                    System.debug( subscriptionRecord );
-                    System.debug( eventBatchForSubscriber );
-                }
-            }
+            jobIdList = dispatchEventsToInterestedSubscribers(eventBatchForSubscriber, subscriptionRecord);
         }
 
-        System.debug('<ojs> jobIdList: ' + jobIdList);
+        System.debug(LoggingLevel.DEBUG, 'jobIdList: ' + jobIdList);
+    }
+
+    private static void captureEventSchemaInformation(List<SObject> events)
+    {
+        Platform_Event_Bus_Describe = events.getSobjectType().getDescribe(SObjectDescribeOptions.DEFERRED);
+        Platform_Event_Bus_Available_Fields_Set = Platform_Event_Bus_Describe.fields.getMap().keyset();
+    }
+
+    private static List<Id> dispatchEventsToInterestedSubscribers(List<SObject> eventBatchForSubscriber, PlatformEvents_Subscription__mdt subscriptionRecord)
+    {
+        List<Id> jobIdList = new List<Id>();
+        
+        if (eventBatchForSubscriber.isEmpty()) return jobIdList;
+
+        // now that the events have been sorted for this specific subscription, distribute them to that subscriber
+        try
+        {
+            System.debug(LoggingLevel.DEBUG, 'attempting to construct the consumer');
+            System.debug(LoggingLevel.DEBUG, 'subscriptionRecord.Consumer__c:\n' + subscriptionRecord.Consumer__c);
+
+            // verify that the class exists and that class implements the IEventsConsumer interface
+            IEventsConsumer consumer = (IEventsConsumer)(Type.forName( subscriptionRecord.Consumer__c ).newInstance());
+
+            System.debug(LoggingLevel.DEBUG, 'successfully constructed');
+
+            Id thisJob = subscriptionRecord.ExecuteSynchronous__c != null && subscriptionRecord.ExecuteSynchronous__c
+                ? consumer.setEvents(eventBatchForSubscriber).setRunSynchronous().run()
+                : consumer.setEvents(eventBatchForSubscriber).run();
+            
+            if (thisJob != null) {
+                jobIdList.add( thisJob );
+            }
+
+        }
+        catch (Exception e)
+        {
+            system.debug(LoggingLevel.DEBUG, e);
+            System.debug(LoggingLevel.DEBUG, subscriptionRecord);
+            System.debug(LoggingLevel.DEBUG, eventBatchForSubscriber);
+        }
+
+        return jobIdList;
+    }
+
+    private static Boolean eventMatchesSubscriberCriteria(SObject event, PlatformEvents_Subscription__mdt subscriptionRecord)
+    {
+        Boolean answer = false;
+
+        System.debug(
+            LoggingLevel.DEBUG, 
+            'Comparing ...\n' +
+            'Platform_Event_Bus_Available_Fields_Set:\n\t' + new List<String>(Platform_Event_Bus_Available_Fields_Set) + '\n' +
+            'Platform_Event_Bus_Describe.getName(): ' + Platform_Event_Bus_Describe.getName() + '\n' +
+            'subscriptionRecord:\n\t' + subscriptionRecord + '\n' +
+            'event:\n\t' + event);
+
+        // Match on Category__c and EventName__c
+        if ( Platform_Event_Bus_Describe.getName().equalsIgnoreCase( subscriptionRecord.EventBus__c )
+            && MatcherRules.MatchEventBusAndCategoryAndEventName.name().equalsIgnoreCase( subscriptionRecord.MatcherRule__c )
+            && Platform_Event_Bus_Available_Fields_Set.contains( CATEGORY_FIELD_NAME )
+            && Platform_Event_Bus_Available_Fields_Set.contains( EVENT_NAME_FIELD_NAME )
+            && subscriptionRecord.EventCategory__c.equalsIgnoreCase( (String)event.get( CATEGORY_FIELD_NAME ) )
+            && subscriptionRecord.Event__c.equalsIgnoreCase( (String)event.get( EVENT_NAME_FIELD_NAME ) ) )
+        {
+            System.debug(LoggingLevel.DEBUG, 'match #1');
+            answer = true;
+        }
+
+        // Match on Category__c
+        else if ( Platform_Event_Bus_Describe.getName().equalsIgnoreCase( subscriptionRecord.EventBus__c )
+            && MatcherRules.MatchEventBusAndCategory.name().equalsIgnoreCase( subscriptionRecord.MatcherRule__c )
+            && Platform_Event_Bus_Available_Fields_Set.contains( CATEGORY_FIELD_NAME )
+            && subscriptionRecord.EventCategory__c.equalsIgnoreCase( (String)event.get( CATEGORY_FIELD_NAME ) ) )
+        {
+            System.debug(LoggingLevel.DEBUG, 'match #2');
+            answer = true;
+        }
+
+        // Match on EventName__c
+        else if ( Platform_Event_Bus_Describe.getName().equalsIgnoreCase( subscriptionRecord.EventBus__c )
+            && MatcherRules.MatchEventBusandEventName.name().equalsIgnoreCase( subscriptionRecord.MatcherRule__c )
+            && Platform_Event_Bus_Available_Fields_Set.contains( EVENT_NAME_FIELD_NAME )
+            && subscriptionRecord.Event__c.equalsIgnoreCase( (String)event.get( EVENT_NAME_FIELD_NAME ) ) )
+        {
+            System.debug(LoggingLevel.DEBUG, 'match #3');
+            answer = true;
+        }
+
+        // Match sole because it is an event on this specific platform event bus
+        else if ( Platform_Event_Bus_Describe.getName().equalsIgnoreCase( subscriptionRecord.EventBus__c )
+            && MatcherRules.MatchEventBus.name().equalsIgnoreCase( subscriptionRecord.MatcherRule__c ) )
+        {
+            System.debug(LoggingLevel.DEBUG, 'match #4');
+            answer = true;
+        }
+
+        else
+        {
+            System.debug(LoggingLevel.DEBUG, 'no match');
+        }
+
+        return answer;
     }
 
     private static Set<String> generateStringSetFromField(List<SObject> sobjList, SObjectField sobjField, Boolean includeBlankValues)
@@ -242,5 +240,45 @@ public class PlatformEventDistributor
         }
 
         return result;
+    }
+
+    private static List<PlatformEvents_Subscription__mdt> getEventSubscribers(List<SObject> events)
+    {
+        // extract the event payloads
+        Set<String> eventNameSet = generateStringSetFromField(events, IafEvent__e.EventName__c, false);
+        Set<String> eventCategorySet = generateStringSetFromField(events, IafEvent__e.Category__c, false);
+
+        System.debug(LoggingLevel.DEBUG, 'Platform_Event_Bus_Describe.getName(): ' + Platform_Event_Bus_Describe.getName());
+
+        // need to read all available PlatformEvents_Subscription__mdt records for this event SObjectType
+        // SOQL targeting custom MDT tables does not support the OR operator.  Manually filter.
+        // https://help.salesforce.com/articleView?id=custommetadatatypes_limitations.htm
+        List<PlatformEvents_Subscription__mdt> eventSubscriptionRecords = new List<PlatformEvents_Subscription__mdt>();
+        for
+        (
+            PlatformEvents_Subscription__mdt ped :
+            [
+                select
+                    Consumer__c, EventCategory__c, Event__c, IsActive__c, MatcherRule__c, EventBus__c, ExecuteSynchronous__c
+                from PlatformEvents_Subscription__mdt
+                where IsActive__c = true AND EventBus__c = :Platform_Event_Bus_Describe.getName()
+            ]
+        )
+        {
+            if (eventNameSet.contains(ped.Event__c) || eventCategorySet.contains(ped.EventCategory__c) || String.isBlank(ped.EventCategory__c))
+            {
+                eventSubscriptionRecords.add(ped);
+            }
+        }
+
+        System.debug(
+            LoggingLevel.DEBUG, 
+            '\neventNameSet:\n\t' + eventNameSet + '\n' +
+            'eventCategorySet:\n\t' + eventCategorySet + '\n' +
+            'CMDT records:\n\t' + [select Consumer__c, EventCategory__c, Event__c, IsActive__c, MatcherRule__c, EventBus__c from PlatformEvents_Subscription__mdt] + '\n' +
+            'Event bus name: ' + Platform_Event_Bus_Describe.getName() + '\n' +
+            'eventSubscriptionRecords:\n\t' + eventSubscriptionRecords);
+
+        return eventSubscriptionRecords;
     }
 }

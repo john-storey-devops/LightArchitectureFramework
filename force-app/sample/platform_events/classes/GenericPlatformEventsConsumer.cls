@@ -9,7 +9,7 @@ public inherited sharing class GenericPlatformEventsConsumer
     *************************************************************/
     public static void GeneratePlatformEvent()
     {
-        Event__e platformEventbus = new Event__e();
+        IafEvent__e platformEventbus = new IafEvent__e();
 
         platformEventbus.EventName__c = 'please_say_hello';
         Database.SaveResult sr = EventBus.publish(platformEventbus);

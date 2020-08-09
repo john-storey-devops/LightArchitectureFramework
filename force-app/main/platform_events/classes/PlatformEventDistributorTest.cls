@@ -30,7 +30,7 @@ public class PlatformEventDistributorTest
     @isTest
     private static void basicTestToActivateCodeCoverage() 
     {
-        Event__e platformEventbus = new Event__e();
+        IafEvent__e platformEventbus = new IafEvent__e();
 
         platformEventbus.EventName__c = 'bluefish';
         platformEventbus.Category__c = Account.getSObjectType().getDescribe().getName();
