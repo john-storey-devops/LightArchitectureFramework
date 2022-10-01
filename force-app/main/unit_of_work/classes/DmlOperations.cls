@@ -1,0 +1,4 @@
+public inherited sharing class DmlOperations
+{
+	public enum DMLOPERATION {DELETE_OPERATION, INSERT_OPERATION, UPDATE_OPERATION, UPSERT_OPERATION}
+}
