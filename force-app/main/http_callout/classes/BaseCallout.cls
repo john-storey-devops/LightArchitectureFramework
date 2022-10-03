@@ -1,8 +1,3 @@
-/**
- *  BaseCallout
- *
- *  The base class used for all callouts
- */
 public abstract class BaseCallout
 {
     public enum CALLOUT_METHODS

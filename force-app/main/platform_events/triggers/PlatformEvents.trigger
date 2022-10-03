@@ -24,7 +24,7 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-trigger PlatformEvents on IafEvent__e
+trigger PlatformEvents on LafEvent__e
     (after insert) 
 {
     PlatformEventDistributor.triggerHandler();

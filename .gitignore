@@ -1,4 +1,7 @@
+/.idea
+/.sf
 /.sfdx
 /.vscode
 
 .vim-force.com/
+/force-app/main/default/profiles/

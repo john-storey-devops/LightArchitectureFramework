@@ -1,10 +1,11 @@
-public inherited sharing class UnitOfWork
+public virtual inherited sharing class UnitOfWork
 	implements IUnitOfWork
 {
 	private SObjectType instanceSObjectType;
 
-	private DmlOperations.DMLOPERATION operationMode;
+	private UnitOfWorkArtifacts.DmlOperation operationMode;
 
+	@TestVisible
 	private IDml dmlImplementation;
 
 	private List<SObject> itemList = new List<SObject>();
@@ -36,63 +37,34 @@ public inherited sharing class UnitOfWork
 		}
 	}
 
-	public DmlOperations.DMLOPERATION getDmlOperation()
+	public virtual UnitOfWorkArtifacts.DmlOperation getDmlOperation()
 	{
 		return operationMode;
 	}
 
-	public SObjectType getSObjectType()
+	public virtual SObjectType getSObjectType()
 	{
 		return instanceSObjectType;
 	}
 
-	public void registerDelete(SObject item)
+	public virtual void register(SObject item)
 	{
-		registerDelete(new List<SObject> {item});
+		register(new List<SObject> {item});
 	}
 
-	public void registerDelete(List<SObject> items)
+	public virtual void register(List<SObject> items)
 	{
-		compareOperationMode(DmlOperations.DMLOPERATION.DELETE_OPERATION);
-		addItemsToList(itemList, items);
-	}
-
-	public void registerDirty(SObject item)
-	{
-		registerDirty(new List<SObject> {item});
-	}
-
-	public void registerDirty(List<SObject> items)
-	{
-		compareOperationMode(DmlOperations.DMLOPERATION.UPDATE_OPERATION);
-		addItemsToList(itemList, items);
-	}
-
-	public void registerNew(SObject item)
-	{
-		registerNew(new List<SObject> {item});
-	}
-
-	public void registerNew(List<SObject> items)
-	{
-		compareOperationMode(DmlOperations.DMLOPERATION.INSERT_OPERATION);
-		addItemsToList(itemList, items);
-	}
-
-	public void registerUpsert(SObject item)
-	{
-		registerUpsert(new List<SObject> {item});
-	}
-
-	public void registerUpsert(List<SObject> items)
-	{
-		compareOperationMode(DmlOperations.DMLOPERATION.UPSERT_OPERATION);
 		addItemsToList(itemList, items);
 	}
 
 	private void addItemsToList(List<SObject> instanceList, List<SObject> newItems)
 	{
-		compareCorrectSObjectType(newItems.getSObjectType());
+		if (newItems == null || newItems.isEmpty())
+		{
+			return;
+		}
+
+		compareCorrectSObjectType(newItems.get(0).getSObjectType());
 		instanceList.addAll(newItems);
 	}
 
@@ -104,28 +76,21 @@ public inherited sharing class UnitOfWork
 		}
 	}
 
-	private void compareOperationMode(DmlOperations.DMLOPERATION mode)
-	{
-		if (!operationMode.equals(mode))
-		{
-			throw new UnitOfWorkException('Unit of Work configured for ' + operationMode.name() + ' operations.');
-		}
-	}
-
-	private UnitOfWork(SObjectType sobjType, DmlOperations.DMLOPERATION intendedOperation, IDml dmlImpl)
+	private UnitOfWork(SObjectType sobjType, UnitOfWorkArtifacts.DmlOperation intendedOperation, IDml dmlImpl)
 	{
 		instanceSObjectType = sobjType;
 		operationMode = intendedOperation;
 		dmlImplementation = dmlImpl;
 	}
 
-	public static IUnitOfWork newInstance(SObjectType sobjType, DmlOperations.DMLOPERATION intendedOperation)
+	public static IUnitOfWork newInstance(SObjectType sobjType, UnitOfWorkArtifacts.DmlOperation intendedOperation)
 	{
 		return newInstance(sobjType, intendedOperation, new StandardDml());
 	}
 
-	public static IUnitOfWork newInstance(SObjectType sobjType, DmlOperations.DMLOPERATION intendedOperation, IDml dmlImpl)
+	public static IUnitOfWork newInstance(SObjectType sobjType, UnitOfWorkArtifacts.DmlOperation intendedOperation, IDml dmlImpl)
 	{
+		System.debug(sobjType.getDescribe().getName());
 		return new UnitOfWork(sobjType, intendedOperation, dmlImpl);
 	}
 }

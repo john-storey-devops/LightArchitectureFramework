@@ -1,11 +1,14 @@
-public class Application {
+public class Application
+{
 
     public static Map<String, SObjectType> SObjectTypesByNameMap = Schema.getGlobalDescribe();
 
-    public static SelectorClass Selector = new SelectorClass();
     public static DomainClass Domain = new DomainClass();
+    public static SelectorClass Selector = new SelectorClass();
+    public static UnitOfWorkClass Unit_Of_Work = new UnitOfWorkClass();
 
-    public class DomainClass {
+    public class DomainClass
+    {
 
         private Map<SObjectType, DomainDefinitionData> domainDefinitionMap = new Map<SObjectType, DomainDefinitionData>();
         private Map<SObjectType, IDomain> domainInstanceMap = new Map<SObjectType, IDomain>();
@@ -17,7 +20,8 @@ public class Application {
         @TestVisible
         private Boolean triggerCoverageOnly = false;
 
-        public IDomain newInstance(SObjectType sobj_type) {
+        public IDomain newInstance(SObjectType sobj_type)
+        {
 
             // Exit the process if the usage is for trigger class coverage.
             if (triggerCoverageOnly) {
@@ -49,20 +53,22 @@ public class Application {
         }
 
         @TestVisible
-        private void setMock(SObjectType sobj_type, IDomain mock_domain) {
+        private void setMock(SObjectType sobj_type, IDomain mock_domain)
+        {
             mockDomainMap.put(sobj_type, mock_domain);
         }
 
-        public DomainClass() {
+        public DomainClass()
+        {
 
             List<ApplicationDomainBinding__mdt> definitionList = [
-                select
+                SELECT
                     Active__c,
                     BindingSObject__c,
                     BindingSObject__r.QualifiedApiName,
                     BindingSObjectAlternate__c,
                     To__c
-                from ApplicationDomainBinding__mdt
+                FROM ApplicationDomainBinding__mdt
             ];
 
             for (ApplicationDomainBinding__mdt def : definitionList) {
@@ -72,25 +78,31 @@ public class Application {
         }
     }
 
-    public class SelectorClass {
+    public class SelectorClass
+    {
 
         private Map<SObjectType, SelectorDefinitionData> selectorDefinitionMap = new Map<SObjectType, SelectorDefinitionData>();
         private Map<SObjectType, ISObjectSelector> selectorInstanceMap = new Map<SObjectType, ISObjectSelector>();
         private Map<SObjectType, ISObjectSelector> mockSelectorMap = new Map<SObjectType, ISObjectSelector>();
 
-        public ISObjectSelector newInstance(SObjectType sobj_type) {
+        public ISObjectSelector newInstance(SObjectType sobj_type)
+        {
 
             // If a mock instance exists, provide it to the consumer.
-            if (mockSelectorMap.containsKey(sobj_type)) {
+            if (mockSelectorMap.containsKey(sobj_type))
+            {
                 return mockSelectorMap.get(sobj_type);
             }
 
-            if (selectorDefinitionMap.containsKey(sobj_type)) {
-                if (!selectorInstanceMap.containsKey(sobj_type)) {
+            if (selectorDefinitionMap.containsKey(sobj_type))
+            {
+                if (!selectorInstanceMap.containsKey(sobj_type))
+                {
                     selectorInstanceMap.put(sobj_type, ((ISObjectSelector) selectorDefinitionMap.get(sobj_type).selector_class.newInstance()));
                 }
             }
-            else {
+            else
+            {
                 throw new ApplicationException('[Selector] SObjectType doesn\'t have a defined, selector implementation.');
             }
 
@@ -98,30 +110,70 @@ public class Application {
         }
 
         @TestVisible
-        private void setMock(SObjectType sobj_type, ISObjectSelector mock_selector) {
+        private void setMock(SObjectType sobj_type, ISObjectSelector mock_selector)
+        {
 
             mockSelectorMap.put(sobj_type, mock_selector);
         }
 
         public SelectorClass() {
 
-            List<ApplicationSelectorBinding__mdt> definitionList = [
-                select
+            List<ApplicationSelectorBinding__mdt> definitionList =
+            [
+                SELECT
                     BindingSObject__c,
                     BindingSObject__r.QualifiedApiName,
                     BindingSObjectAlternate__c,
                     To__c
-                from ApplicationSelectorBinding__mdt
+                FROM ApplicationSelectorBinding__mdt
             ];
 
-            for (ApplicationSelectorBinding__mdt def : definitionList) {
+            for (ApplicationSelectorBinding__mdt def : definitionList)
+            {
                 SelectorDefinitionData def_data = new SelectorDefinitionData(def);
                 selectorDefinitionMap.put(def_data.sobj_type, def_data);
             }
         }
     }
 
-    private class SelectorDefinitionData {
+    public class UnitOfWorkClass
+    {
+        private Map<String, IUnitOfWork> unitOfWorkInstanceMap = new Map<String, IUnitOfWork>();
+
+        public IUnitOfWork newInstance(SObjectType sobjType, UnitOfWorkArtifacts.DmlOperation dmlOperation)
+        {
+            String key = makeKey(sobjType, dmlOperation);
+
+            if (!unitOfWorkInstanceMap.containsKey(key))
+            {
+                unitOfWorkInstanceMap.put(key, UnitOfWork.newInstance(sobjType, dmlOperation));
+            }
+
+            return unitOfWorkInstanceMap.get(key);
+        }
+
+        @TestVisible
+        private void setMock(IUnitOfWork mock_unitOfWork)
+        {
+            unitOfWorkInstanceMap.put(makeKey(mock_unitOfWork), mock_unitOfWork);
+        }
+
+        private String makeKey(IUnitOfWork uow)
+        {
+            return makeKey(uow.getSObjectType(), uow.getDmlOperation());
+        }
+
+        private String makeKey(SObjectType sobjType, UnitOfWorkArtifacts.DmlOperation dmlOperation)
+        {
+            return
+                sobjType.getDescribe().getKeyPrefix()
+                + '|' +
+                dmlOperation.name();
+        }
+    }
+
+    private class SelectorDefinitionData
+    {
 
         public SObjectType sobj_type = null;
         public Type selector_class = null;
@@ -147,7 +199,8 @@ public class Application {
         }
     }
 
-    private class DomainDefinitionData {
+    private class DomainDefinitionData
+    {
 
         public SObjectType sobj_type = null;
         public Type domain_class = null;
@@ -177,5 +230,6 @@ public class Application {
     }
 
     public class ApplicationException
-        extends Exception {}
+        extends Exception
+    {}
 }
