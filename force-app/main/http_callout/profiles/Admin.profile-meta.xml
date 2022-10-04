@@ -37,6 +37,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>ContactSelector</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>DoNothingDomainClass</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -94,6 +98,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>IConstructable</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>IContactSelector</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -161,6 +169,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>TestUtils</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>TriggerHandlerAbstract</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -173,7 +185,19 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>UnitOfWorkArtifacts</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>UnitOfWorkException</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>UnitOfWorkLogic</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>UnitOfWorkLogicTest</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -226,6 +250,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>LogicClassBinding__mdt.BindingType__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PlatformEvents_Subscription__mdt.EventCategory__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -249,6 +278,9 @@
     </layoutAssignments>
     <layoutAssignments>
         <layout>ApplicationSelectorBinding__mdt-ApplicationSelectorBinding Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>LogicClassBinding__mdt-LogicClassBinding Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
         <layout>PlatformEvents_Subscription__mdt-Platform Events - Subscription Layout</layout>
