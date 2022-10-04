@@ -35,6 +35,6 @@ public abstract class SObjectSelector
 
         System.debug('js:\n' + soql);
 
-        return (List<Account>) Database.query(soql);
+        return (List<SObject>) Database.query(soql);
     }  
 }

@@ -245,8 +245,8 @@ public class PlatformEventDistributor
     private static List<PlatformEvents_Subscription__mdt> getEventSubscribers(List<SObject> events)
     {
         // extract the event payloads
-        Set<String> eventNameSet = generateStringSetFromField(events, IafEvent__e.EventName__c, false);
-        Set<String> eventCategorySet = generateStringSetFromField(events, IafEvent__e.Category__c, false);
+        Set<String> eventNameSet = generateStringSetFromField(events, LafEvent__e.EventName__c, false);
+        Set<String> eventCategorySet = generateStringSetFromField(events, LafEvent__e.Category__c, false);
 
         System.debug(LoggingLevel.DEBUG, 'Platform_Event_Bus_Describe.getName(): ' + Platform_Event_Bus_Describe.getName());
 
