@@ -4,6 +4,7 @@ public class Application
     public static Map<String, SObjectType> SObjectTypesByNameMap = Schema.getGlobalDescribe();
 
     public static DomainClass Domain = new DomainClass();
+    public static LogicClass Logic = new LogicClass();
     public static SelectorClass Selector = new SelectorClass();
     public static UnitOfWorkClass Unit_Of_Work = new UnitOfWorkClass();
 
@@ -74,6 +75,59 @@ public class Application
             for (ApplicationDomainBinding__mdt def : definitionList) {
                 DomainDefinitionData def_data = new DomainDefinitionData(def);
                 domainDefinitionMap.put(def_data.sobj_type, def_data);
+            }
+        }
+    }
+
+    public class LogicClass
+    {
+        private Map<String, LogicClassDefinitionData> logicClassDefinitionMap = new Map<String, LogicClassDefinitionData>();
+        private Map<String, Object> logicClassInstances = new Map<String, Object>();
+        private Map<Type, Object> mockInstances = new Map<Type, Object>();
+        public Object newInstance(Type abstractType)
+        {
+            if (mockInstances.containsKey(abstractType))
+            {
+                return mockInstances.get(abstractType);
+            }
+
+            String abstractTypeName = abstractType.getName().toLowerCase();
+
+            if (!logicClassInstances.containsKey(abstractTypeName))
+            {
+                if (!logicClassDefinitionMap.containsKey(abstractTypeName))
+                {
+                    throw new ApplicationException('Logic Class Binding does NOT exist for ' + abstractType.getName());
+                }
+
+                LogicClassDefinitionData defData = logicClassDefinitionMap.get(abstractTypeName);
+                logicClassInstances.put(abstractTypeName, Type.forName(defData.concreteImplementationName).newInstance());
+            }
+
+            return logicClassInstances.get(abstractTypeName);
+        }
+
+        @TestVisible
+        private void setMock(Type abstractType, Object concreteInstance)
+        {
+            mockInstances.put(abstractType, concreteInstance);
+        }
+
+        public LogicClass()
+        {
+
+            List<LogicClassBinding__mdt> definitionList =
+            [
+                SELECT
+                    BindingType__c,
+                    To__c
+                FROM LogicClassBinding__mdt
+            ];
+
+            for (LogicClassBinding__mdt def : definitionList)
+            {
+                LogicClassDefinitionData def_data = new LogicClassDefinitionData(def);
+                logicClassDefinitionMap.put(def_data.abstractTypeName.toLowerCase(), def_data);
             }
         }
     }
@@ -172,33 +226,6 @@ public class Application
         }
     }
 
-    private class SelectorDefinitionData
-    {
-
-        public SObjectType sobj_type = null;
-        public Type selector_class = null;
-
-        public SelectorDefinitionData(ApplicationSelectorBinding__mdt def) {
-
-            if (def.BindingSObject__c != null) {
-                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__r.QualifiedApiName);
-            }
-            else if (Application.SObjectTypesByNameMap.containsKey(def.BindingSObjectAlternate__c.toLowerCase())) {
-                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c.toLowerCase());
-            }
-            else {
-                throw new ApplicationException('[Selector] Binding SObject not specified.');
-            }
-
-            if (String.isNotBlank(def.To__c)) {
-                selector_class = Type.forName(def.To__c);
-            }
-            else {
-                throw new ApplicationException('[Selector] Related Apex class not specified.');
-            }
-        }
-    }
-
     private class DomainDefinitionData
     {
 
@@ -226,6 +253,45 @@ public class Application
             }
 
             this.active = def.Active__c;
+        }
+    }
+
+    private class LogicClassDefinitionData
+    {
+        public String abstractTypeName = null;
+        public String concreteImplementationName = null;
+
+        public LogicClassDefinitionData(LogicClassBinding__mdt def)
+        {
+            abstractTypeName = def.BindingType__c;
+            concreteImplementationName = def.To__c;
+        }
+    }
+
+    private class SelectorDefinitionData
+    {
+
+        public SObjectType sobj_type = null;
+        public Type selector_class = null;
+
+        public SelectorDefinitionData(ApplicationSelectorBinding__mdt def) {
+
+            if (def.BindingSObject__c != null) {
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObject__r.QualifiedApiName);
+            }
+            else if (Application.SObjectTypesByNameMap.containsKey(def.BindingSObjectAlternate__c.toLowerCase())) {
+                sobj_type = Application.SObjectTypesByNameMap.get(def.BindingSObjectAlternate__c.toLowerCase());
+            }
+            else {
+                throw new ApplicationException('[Selector] Binding SObject not specified.');
+            }
+
+            if (String.isNotBlank(def.To__c)) {
+                selector_class = Type.forName(def.To__c);
+            }
+            else {
+                throw new ApplicationException('[Selector] Related Apex class not specified.');
+            }
         }
     }
 
