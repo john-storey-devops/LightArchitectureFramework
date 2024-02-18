@@ -1,9 +1,11 @@
 public abstract class SObjectSelector
-    implements ISObjectSelector {
-
+    implements ISObjectSelector
+{
     public abstract SObjectType sobjectType();
 
     abstract List<Schema.SObjectField> getAdditionalSObjectFieldList();
+
+    abstract Set<String> getLookupFieldSet();
 
     protected String getFieldsToQuery() {
 
@@ -20,6 +22,10 @@ public abstract class SObjectSelector
             }
         }
 
+        // Without extensive code which this modest framework wishes to avoid,
+        // validating the existence and accessibility of lookup fields is impractical.
+        fields.addAll(getLookupFieldSet());
+
         return String.join(fields, ', ');
     }
 
@@ -28,12 +34,11 @@ public abstract class SObjectSelector
         if (idSet == null || idSet.isEmpty()) return new List<Account>();
 
         String soql =
-            'select '
+            'SELECT '
             + getFieldsToQuery() + ' ' +
-            + 'from ' + sObjectType() + ' '
-            + 'where id in :idSet';
-
-        System.debug('js:\n' + soql);
+            + 'FROM ' + sObjectType() + ' '
+            + 'WHERE id IN :idSet' + ' '
+            + 'WITH USER_MODE';
 
         return (List<SObject>) Database.query(soql);
     }  
