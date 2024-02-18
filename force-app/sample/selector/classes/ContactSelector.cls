@@ -2,10 +2,9 @@ public with sharing class ContactSelector
 	extends SObjectSelector
 	implements IContactSelector
 {
-
 	public static IContactSelector newInstance()
 	{
-		return (IContactSelector) Application.selector.newInstance(Contact.SObjectType);
+		return (IContactSelector) Application.Selector.newInstance(Contact.SObjectType);
 	}
 
 	public override Schema.sObjectType sObjectType()
@@ -19,8 +18,13 @@ public with sharing class ContactSelector
 		return fieldList;
 	}
 
+	private Set<String> getLookupFieldSet()
+	{
+		return new Set<String>();
+	}
+
 	public List<Contact> selectById(Set<Id> idSet)
 	{
-		return (List<Contact>) selectSObjectById(idset);
+		return (List<Contact>) selectSObjectById(idSet);
 	}
 }
