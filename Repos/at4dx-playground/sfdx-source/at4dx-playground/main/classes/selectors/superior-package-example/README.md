@@ -1,0 +1,1 @@
+Typically these classes would exist in a consuming package where a new SObject Field has been introduced, enabling querying the new field and using it in the WHERE clause's conditions.

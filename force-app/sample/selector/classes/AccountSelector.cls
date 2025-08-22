@@ -1,4 +1,4 @@
-public inherited sharing class AccountSelector
+public virtual inherited sharing class AccountSelector
     extends SObjectSelector
     implements IAccountSelector
 {
