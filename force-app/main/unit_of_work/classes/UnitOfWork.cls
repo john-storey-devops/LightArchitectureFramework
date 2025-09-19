@@ -1,14 +1,14 @@
 public virtual inherited sharing class UnitOfWork
 	implements IUnitOfWork
 {
-	private SObjectType instanceSObjectType;
+	private final SObjectType instanceSObjectType;
 
-	private UnitOfWorkArtifacts.DmlOperation operationMode;
+	private final UnitOfWorkArtifacts.DmlOperation operationMode;
 
-	@TestVisible
-	private IDml dmlImplementation;
+    @TestVisible
+    private IDml dmlImplementation;
 
-	private List<SObject> itemList = new List<SObject>();
+	private final List<SObject> itemList = new List<SObject>();
 
 	public virtual List<Object> commitWork()
 	{
@@ -76,21 +76,23 @@ public virtual inherited sharing class UnitOfWork
 		}
 	}
 
-	private UnitOfWork(SObjectType sobjType, UnitOfWorkArtifacts.DmlOperation intendedOperation, IDml dmlImpl)
+    private UnitOfWork(SObjectType sobjType, UnitOfWorkArtifacts.DmlOperation intendedOperation, IDml dmlImpl)
 	{
 		instanceSObjectType = sobjType;
 		operationMode = intendedOperation;
-		dmlImplementation = dmlImpl;
+		dmlImplementation = (mockDmlImplementation == null) ? dmlImpl : mockDmlImplementation;
 	}
 
-	public static IUnitOfWork newInstance(SObjectType sobjType, UnitOfWorkArtifacts.DmlOperation intendedOperation)
+    @TestVisible
+    private static IDml mockDmlImplementation;
+
+    public static IUnitOfWork newInstance(SObjectType sobjType, UnitOfWorkArtifacts.DmlOperation intendedOperation)
 	{
 		return newInstance(sobjType, intendedOperation, new StandardDml());
 	}
 
 	public static IUnitOfWork newInstance(SObjectType sobjType, UnitOfWorkArtifacts.DmlOperation intendedOperation, IDml dmlImpl)
 	{
-		System.debug(sobjType.getDescribe().getName());
 		return new UnitOfWork(sobjType, intendedOperation, dmlImpl);
 	}
 }

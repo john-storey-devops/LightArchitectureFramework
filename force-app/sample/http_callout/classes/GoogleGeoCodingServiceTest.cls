@@ -14,9 +14,9 @@ private class GoogleGeoCodingServiceTest
 		Location loc = GoogleGeoCodingService.getLatitudeLongitudeForAddress(getAddress());
 		Test.stopTest();
 
-		System.assertNotEquals(null, loc);
-		System.assertEquals(37.4224764, loc.getLatitude());
-		System.assertEquals(-122.0842499, loc.getLongitude());
+		Assert.isNotNull(loc);
+		Assert.areEqual(37.4224764, loc.getLatitude());
+		Assert.areEqual(-122.0842499, loc.getLongitude());
 	}
 
 	@isTest
@@ -34,7 +34,7 @@ private class GoogleGeoCodingServiceTest
 		try
 		{
 			GoogleGeoCodingService.getLatitudeLongitudeForAddress(data);
-			System.assert(false, 'The service should have returned an exception.');
+			Assert.fail('The service should have returned an exception.');
 		}
 		catch (GoogleGeoCodingExceptions.ParameterException e)
 		{
@@ -54,7 +54,7 @@ private class GoogleGeoCodingServiceTest
 		try
 		{
 			GoogleGeoCodingService.getLatitudeLongitudeForAddress(null);
-			System.assert(false, 'An exception should have occurred.');
+			Assert.fail('An exception should have occurred.');
 		}
 		catch (GoogleGeoCodingExceptions.ParameterException e) {
 			// Exception expected.

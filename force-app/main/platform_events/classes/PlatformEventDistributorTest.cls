@@ -40,7 +40,7 @@ public class PlatformEventDistributorTest
         Database.SaveResult sr = EventBus.publish(platformEventbus);
         Test.stopTest();
 
-        System.assertEquals(true, sr.isSuccess());
+        Assert.isTrue(sr.isSuccess());
     }
 
     private static Integer fakeIdCount = 0;

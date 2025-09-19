@@ -21,7 +21,7 @@ public class AccountSpecialTest {
 
         try {
             insert acct;
-            System.assert(false);  // An exception is expected.
+            Assert.fail();  // An exception is expected.
         }
         catch (Exception exc) {
             // An exception is expected.
@@ -47,7 +47,7 @@ public class AccountSpecialTest {
     private static void MockSelectorUsage() {
 
         // Verify that no Account records exist within the test context.
-        System.assertEquals(0, [select id from Account].size());
+        Assert.areEqual(0, [select id from Account].size());
 
         Account acct = new Account();
         acct.Name = 'joe';
@@ -61,8 +61,8 @@ public class AccountSpecialTest {
         List<Account> accountList = ((IAccountSelector) Application.Selector.newInstance(Account.SObjectType)).selectById(new Set<Id>());
 
         // ... we get back the data that we gave to the mock class.
-        System.assertEquals(1, accountList.size());
-        System.assertEquals(acct.Name, accountList.get(0).Name);
+        Assert.areEqual(1, accountList.size());
+        Assert.areEqual(acct.Name, accountList.get(0).Name);
     }
 
     private class MockAccountDomain
@@ -86,8 +86,12 @@ public class AccountSpecialTest {
 
         public List<Account> accountList = null;
 
-        public SObjectType sObjectType() {
+        public SObjectType sobjectType() {
             return Account.SObjectType;
+        }
+
+        public IAccountSelector addAdditionalSObjectFields(List<SObjectField> additionalFields) {
+            return this;
         }
 
         public String getFieldsToQuery() {

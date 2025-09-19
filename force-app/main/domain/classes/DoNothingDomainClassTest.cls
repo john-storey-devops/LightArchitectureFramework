@@ -10,8 +10,8 @@ public class DoNothingDomainClassTest {
          */
 
          DoNothingDomainClass inert = (DoNothingDomainClass) DoNothingDomainClass.newInstance();
-         System.assert(inert != null);
+         Assert.isNotNull(inert);
          inert.handleTrigger();
-         System.assertEquals(null, inert.domainSObjectType());
+         Assert.isNull(inert.domainSObjectType());
     }
 }

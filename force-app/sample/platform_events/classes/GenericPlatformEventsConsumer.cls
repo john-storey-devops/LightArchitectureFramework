@@ -15,7 +15,7 @@ public inherited sharing class GenericPlatformEventsConsumer
         Database.SaveResult sr = EventBus.publish(platformEventbus);
         System.debug(JSON.serializePretty(sr));
 
-        System.assertEquals(true, sr.isSuccess());
+        Assert.isTrue(sr.isSuccess());
     }
 
     public override void runInProcess()

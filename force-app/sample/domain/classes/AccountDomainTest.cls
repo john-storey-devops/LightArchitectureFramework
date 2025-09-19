@@ -5,8 +5,8 @@ public class AccountDomainTest {
     private static void createNewInstance() {
 
         IAccountDomain dom = AccountDomain.newInstance();
-        System.assert(dom != null);
-        System.assertEquals(Account.SObjectType, dom.domainSObjectType());
+        Assert.isNotNull(dom);
+        Assert.areEqual(Account.SObjectType, dom.domainSObjectType());
     }
 
     @IsTest
@@ -28,7 +28,7 @@ public class AccountDomainTest {
 
         try {
             new AccountDomain().validate(new List<Account> {acct});
-            System.assert(false);
+            Assert.fail();
         }
         catch (Exception exc) {
             // This is expected.
@@ -38,12 +38,16 @@ public class AccountDomainTest {
     public class mock_AccountSelector
         implements IAccountSelector {
 
-        public SObjectType sObjectType() {
+        public SObjectType sobjectType() {
             return Account.SObjectType;
         }
 
         public String getFieldsToQuery() {
             return '';
+        }
+
+        public IAccountSelector addAdditionalSObjectFields(List<SObjectField> additionalFields) {
+            return this;
         }
 
         public List<SObject> selectSObjectById(Set<Id> idSet) {

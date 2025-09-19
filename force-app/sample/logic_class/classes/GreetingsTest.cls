@@ -5,8 +5,8 @@ private class GreetingsTest
 	static void getGreetingWithDefinedImplementation()
     {
         IGreetings g = (IGreetings) Application.Logic.newInstance(IGreetings.class);
-        System.assertEquals('Hello world!!!', g.getGreeting());
-        System.assertEquals('Hello everyone!!!', g.getGreeting('everyone'));
+        Assert.areEqual('Hello world!!!', g.getGreeting());
+        Assert.areEqual('Hello everyone!!!', g.getGreeting('everyone'));
     }
 
 	@IsTest
@@ -14,8 +14,8 @@ private class GreetingsTest
 	{
 		Application.Logic.setMock(IGreetings.class, new MockGreetings());
 		IGreetings g = (IGreetings) Application.Logic.newInstance(IGreetings.class);
-		System.assertEquals('test', g.getGreeting());
-		System.assertEquals('test', g.getGreeting('everyone'));
+		Assert.areEqual('test', g.getGreeting());
+		Assert.areEqual('test', g.getGreeting('everyone'));
 	}
 
 	public class MockGreetings

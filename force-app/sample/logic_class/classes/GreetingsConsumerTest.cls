@@ -17,9 +17,9 @@ private class GreetingsConsumerTest
 
 		String msg = new GreetingsConsumer().getWelcomeMessageText(name);
 
-		System.assert(msg.startsWith('Thank you, ' + name));  // Message begins using the proper name
-		System.assert(msg.contains('fabulous service'));      // assures an important part of the content, for example
-		System.assert(msg.endsWith('Happy day_of_week!!!'));  // We don't need logic dealing with date details
+		Assert.isTrue(msg.startsWith('Thank you, ' + name));  // Message begins using the proper name
+		Assert.isTrue(msg.contains('fabulous service'));      // assures an important part of the content, for example
+		Assert.isTrue(msg.endsWith('Happy day_of_week!!!'));  // We don't need logic dealing with date details
 	}
 
 	public class MockGreetings

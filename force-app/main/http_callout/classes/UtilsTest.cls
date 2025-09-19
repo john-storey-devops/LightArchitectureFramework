@@ -6,9 +6,9 @@
 @isTest
 private class UtilsTest
 {
-    @isTest
+    @IsTest
     static void testOrgValueIsAvailable()
     {
-        System.assert( Utils.org != null );
+        Assert.isNotNull( Utils.org );
     }
 }
