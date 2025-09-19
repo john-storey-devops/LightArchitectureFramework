@@ -5,9 +5,9 @@ private class UnitOfWorkTest
 	private static void typicalInstantiation()
     {
         IUnitOfWork uow = UnitOfWork.newInstance(Opportunity.SObjectType, UnitOfWorkArtifacts.DmlOperation.INSERT_OPERATION);
-        System.assert(uow instanceof UnitOfWork);
-		System.assertEquals(Opportunity.SObjectType, uow.getSObjectType());
-		System.assertEquals(UnitOfWorkArtifacts.DmlOperation.INSERT_OPERATION, uow.getDmlOperation());
+        Assert.isInstanceOfType(uow, UnitOfWork.class);
+		Assert.areEqual(Opportunity.SObjectType, uow.getSObjectType());
+		Assert.areEqual(UnitOfWorkArtifacts.DmlOperation.INSERT_OPERATION, uow.getDmlOperation());
 	}
 
 	@IsTest
@@ -23,7 +23,7 @@ private class UnitOfWorkTest
 		}
 		catch (Exception exc)
 		{
-			System.assert(false, 'InertDML should have prevented execution of the Update operation.');
+			Assert.fail('InertDML should have prevented execution of the Update operation.');
 		}
 	}
 
@@ -35,11 +35,11 @@ private class UnitOfWorkTest
 		try
 		{
 			uow.register(new Account());
-			System.assert(false, 'Registering a SObject different than the configured SObjectType should generate an Exception.');
+			Assert.fail('Registering a SObject different than the configured SObjectType should generate an Exception.');
 		}
 		catch(Exception exc)
 		{
-			System.assert(
+			Assert.isTrue(
 				exc.getMessage().startsWith('Can only add item(s) of SObjectType'),
 				'Expected Exception not generated.  Actual: ' + exc.getMessage()
 			);

@@ -8,30 +8,39 @@ public abstract class TriggerHandlerAbstract
     protected Boolean isUpdate = false;
     protected Boolean isDelete = false;
 
-    protected List<SObject> newSObjectList = null;
-    protected Map<Id, SObject> newSObjectMap = null;
-    protected List<SObject> oldSObjectList = null;
-    protected Map<Id, SObject> oldSObjectMap = null;
+    protected List<SObject> newSObjectList = new List<SObject>();
+    protected Map<Id, SObject> newSObjectMap = new Map<Id, SObject>();
+    protected List<SObject> oldSObjectList = new List<SObject>();
+    protected Map<Id, SObject> oldSObjectMap = new Map<Id, SObject>();
 
     protected Integer size = -1;
 
     protected void setTriggerContext() {
-        isExecuting = Trigger.isExecuting;
-        isBefore = Trigger.isBefore;
-        isAfter = Trigger.isAfter;
-        isInsert = Trigger.isInsert;
-        isUpdate = Trigger.isUpdate;
-        isDelete = Trigger.isDelete;
+        isExecuting = getBooleanValue(Trigger.isExecuting);
+        isBefore = getBooleanValue(Trigger.isBefore);
+        isAfter = getBooleanValue(Trigger.isAfter);
+        isInsert = getBooleanValue(Trigger.isInsert);
+        isUpdate = getBooleanValue(Trigger.isUpdate);
+        isDelete = getBooleanValue(Trigger.isDelete);
 
-        newSObjectList = Trigger.new;
-        newSObjectMap = Trigger.newMap;
-        oldSObjectList = Trigger.old;
-        oldSObjectMap = Trigger.oldMap;
+        newSObjectList = (Trigger.new != null) ? Trigger.new : newSObjectList;
+        newSObjectMap = (Trigger.newMap != null) ? Trigger.newMap : newSObjectMap;
+        oldSObjectList = (Trigger.old != null) ? Trigger.old : oldSObjectList;
+        oldSObjectMap = (Trigger.oldMap != null) ? Trigger.oldMap : oldSObjectMap;
 
-        size = Trigger.size;
+        size = (Trigger.size != null) ? Trigger.size : size;
     }
 
     public abstract void handleTrigger();
+
+    private static Boolean getBooleanValue(Object obj)
+    {
+        if (obj == null)
+        {
+            return false;
+        }
+        return Boolean.valueOf(obj);
+    }
 
     public class TriggerHandlerAbstractException
         extends Exception {}

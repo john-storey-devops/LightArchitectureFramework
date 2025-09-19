@@ -6,13 +6,22 @@ public virtual inherited sharing class AccountSelector
         return (IAccountSelector) Application.Selector.newInstance(Account.SObjectType);
     }
 
-    public override Schema.sObjectType sObjectType() {
+    public override Schema.SObjectType sobjectType() {
         return Account.SObjectType;
     }
 
-    private List<Schema.SObjectField> getAdditionalSObjectFieldList() {
-        List<Schema.SObjectField> fieldList = Account.SObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).fields.getMap().values();
-        return fieldList;
+    protected virtual List<SObjectField> getStandardFields()
+    {
+        return new List<SObjectField>{
+            Account.Id,
+            Account.Name,
+            Account.Description
+        };
+    }
+
+    public IAccountSelector addAdditionalSObjectFields(List<SObjectField> additionalFields) {
+        additionalSObjectFieldList.addAll(additionalFields);
+        return this;
     }
 
     private Set<String> getLookupFieldSet()
@@ -22,15 +31,14 @@ public virtual inherited sharing class AccountSelector
             SchemaUtil.JoinSObjectFieldsForQuery(
                 new Set<Schema.SObjectField>
                 {
-                    Account.OperatingHoursId,
-                    OperatingHours.Description
+                    Account.OwnerId
                 }
             )
         };
     }
 
     public List<Account> selectById(Set<Id> idSet) {
-        return (List<Account>) selectSObjectById(idSet);
+        return selectSObjectById(idSet);
     }
 
     public List<Account> selectByNameContains(String search_text) {
@@ -51,10 +59,10 @@ public virtual inherited sharing class AccountSelector
         String soql =
             'SELECT '
             + getFieldsToQuery() + ' ' +
-            + 'FROM ' + sObjectType() + ' '
+            + 'FROM ' + sobjectType() + ' '
             + 'WHERE Name LIKE \':search_text%\'' + ' '
             + 'WITH USER_MODE';
 
-        return (List<Account>) Database.query(soql);
+        return Database.query(soql);
     }
 }

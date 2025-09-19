@@ -25,18 +25,18 @@ private class UnitOfWorkLogicTest
 
 		IDml dmlImpl = ((UnitOfWork) uowInsert).dmlImplementation;
 		InertDml inert = (InertDml) dmlImpl;
-		System.assert(!inert.operationsSObjectList.isEmpty());
-		System.assertEquals(ctc.FirstName, ((Contact) inert.operationsSObjectList.get(0)).FirstName);
+        Assert.isTrue(!inert.operationsSObjectList.isEmpty());
+		Assert.areEqual(ctc.FirstName, ((Contact) inert.operationsSObjectList.get(0)).FirstName);
 
 		dmlImpl = ((UnitOfWork) uowUpdate).dmlImplementation;
 		inert = (InertDml) dmlImpl;
-		System.assert(!inert.operationsSObjectList.isEmpty());
-		System.assertEquals(ctc.FirstName, ((Contact) inert.operationsSObjectList.get(0)).FirstName);
+        Assert.isTrue(!inert.operationsSObjectList.isEmpty());
+		Assert.areEqual(ctc.FirstName, ((Contact) inert.operationsSObjectList.get(0)).FirstName);
 
 		dmlImpl = ((UnitOfWork) uowDelete).dmlImplementation;
 		inert = (InertDml) dmlImpl;
-		System.assert(!inert.operationsSObjectList.isEmpty());
-		System.assertEquals(ctc.FirstName, ((Contact) inert.operationsSObjectList.get(0)).FirstName);
+        Assert.isTrue(!inert.operationsSObjectList.isEmpty());
+		Assert.areEqual(ctc.FirstName, ((Contact) inert.operationsSObjectList.get(0)).FirstName);
 	}
 
 	@IsTest
@@ -57,5 +57,9 @@ private class UnitOfWorkLogicTest
 		public SObjectType sobjectType() {
 			return Contact.SObjectType;
 		}
-	}
+
+        public IContactSelector addAdditionalSObjectFields(List<SObjectField> additionalFields) {
+            return this;
+        }
+    }
 }

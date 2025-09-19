@@ -2,7 +2,7 @@ public inherited sharing class UnitOfWorkLogic
 {
 	public static void doSomeBasicUnitOfWorkStuff(Contact ctc)
 	{
-		System.assert(ctc != null, 'Contact cannot be null');
+		Assert.isNotNull(ctc, 'Contact cannot be null');
 
 		System.Savepoint sp = Database.setSavepoint();
 
@@ -15,7 +15,7 @@ public inherited sharing class UnitOfWorkLogic
 			IContactSelector contactSelector = (IContactSelector) Application.Selector.newInstance(Contact.SObjectType);
 
 			List<Contact> contactList = contactSelector.selectById(new Set<Id> {ctc.Id});
-			System.assert(!contactList.isEmpty(), 'Contact was not created.');
+			Assert.isTrue(!contactList.isEmpty(), 'Contact was not created.');
 
 			try
 			{
@@ -35,7 +35,7 @@ public inherited sharing class UnitOfWorkLogic
 			uow.commitWork();
 
 			contactList = contactSelector.selectById(new Set<Id> {ctc.Id});
-			System.assertEquals('hello', contactList.get(0).Description);
+			Assert.areEqual('hello', contactList.get(0).Description);
 
 			uow = Application.Unit_Of_Work.newInstance(Contact.SObjectType, UnitOfWorkArtifacts.DmlOperation.DELETE_OPERATION);
 			uow.register(ctc);

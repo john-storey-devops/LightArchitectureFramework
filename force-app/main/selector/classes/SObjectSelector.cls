@@ -3,15 +3,24 @@ public abstract class SObjectSelector
 {
     public abstract SObjectType sobjectType();
 
-    abstract List<Schema.SObjectField> getAdditionalSObjectFieldList();
+    abstract List<Schema.SObjectField> getStandardFields();
+
+    protected List<Schema.SObjectField> additionalSObjectFieldList = new List<SObjectField>();
+    protected List<Schema.SObjectField> getAdditionalSObjectFieldList()
+    {
+        return additionalSObjectFieldList;
+    }
 
     abstract Set<String> getLookupFieldSet();
 
     protected String getFieldsToQuery() {
 
         List<String> fields = new List<String>();
+
+        List<Schema.SObjectField> allFieldToQuery = getStandardFields();
+        allFieldToQuery.addAll(additionalSObjectFieldList);
     
-        for (SObjectField fld : getAdditionalSObjectFieldList())
+        for (SObjectField fld : allFieldToQuery)
         {
             if (!fld.getDescribe().isAccessible()) continue;
 

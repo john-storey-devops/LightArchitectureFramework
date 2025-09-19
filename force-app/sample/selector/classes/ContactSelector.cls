@@ -1,4 +1,4 @@
-public with sharing class ContactSelector
+public virtual inherited sharing class ContactSelector
 	extends SObjectSelector
 	implements IContactSelector
 {
@@ -7,16 +7,22 @@ public with sharing class ContactSelector
 		return (IContactSelector) Application.Selector.newInstance(Contact.SObjectType);
 	}
 
-	public override Schema.sObjectType sObjectType()
+	public override Schema.SObjectType sobjectType()
 	{
 		return Contact.SObjectType;
 	}
 
-	private List<Schema.SObjectField> getAdditionalSObjectFieldList()
-	{
-		List<Schema.SObjectField> fieldList = Contact.SObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).fields.getMap().values();
-		return fieldList;
-	}
+    private virtual List<Schema.SObjectField> getStandardFields() {
+        return new List<Schema.SObjectField> {
+            Contact.Id,
+            Contact.Name
+        };
+    }
+
+    public IContactSelector addAdditionalSObjectFields(List<SObjectField> additionalFields) {
+        additionalSObjectFieldList.addAll(additionalFields);
+        return this;
+    }
 
 	private Set<String> getLookupFieldSet()
 	{
@@ -25,6 +31,6 @@ public with sharing class ContactSelector
 
 	public List<Contact> selectById(Set<Id> idSet)
 	{
-		return (List<Contact>) selectSObjectById(idSet);
+		return selectSObjectById(idSet);
 	}
 }
