@@ -3,4 +3,5 @@ public interface IContactSelector
 {
     IContactSelector addAdditionalSObjectFields(List<Schema.SObjectField> additionalFields);
 	List<Contact> selectById(Set<Id> idSet);
+    List<Contact> selectWithInjectable(Type injectableClassType, ISelectorArgumentable arguments);
 }

@@ -45,10 +45,40 @@ public abstract class SObjectSelector
         String soql =
             'SELECT '
             + getFieldsToQuery() + ' ' +
-            + 'FROM ' + sObjectType() + ' '
+            + 'FROM ' + sobjectType() + ' '
             + 'WHERE id IN :idSet' + ' '
             + 'WITH USER_MODE';
 
         return (List<SObject>) Database.query(soql);
-    }  
+    }
+
+    public virtual List<SObject> selectWithInjectable(Type injectableClassType, ISelectorArgumentable arguments)
+    {
+        if ( injectableClassType == null )
+        {
+            throw new SObjectSelectorException('methodClazz cannot be null');
+        }
+
+        try
+        {
+            ISelectorInjectable injectableClass = (ISelectorInjectable)injectableClassType.newInstance();
+            injectableClass.setSObjectType(sobjectType());
+            injectableClass.setFieldList(getFieldsToQuery());
+
+            if (arguments != null)
+            {
+                injectableClass.setArguments(arguments);
+            }
+
+            return injectableClass.selectQuery();
+        }
+        catch (System.TypeException te)
+        {
+            throw new SObjectSelectorException('Parameter injectableClassType of type \'' + injectableClassType.getName() + '\' does not implement the interface \'' + ISelectorInjectable.class.getName() + '\'');
+        }
+        catch (System.Exception e)
+        {
+            throw new SObjectSelectorException(e);
+        }
+    }
 }
